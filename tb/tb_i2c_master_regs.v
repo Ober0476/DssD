@@ -193,14 +193,42 @@ module tb_i2c_master_regs(); // module name (same as the file)
     $display("[Info- %t] Test CR autoclear after tranfer ends", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // the autoclear of the CR register bits when byte transfer ends
-    // TO BE COMPLETED BY THE STUDENT
+    tranfer_done(1);
+    addr= 3'h3;
+    vExpected = 8'd0;
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    errors = 0;  
 
     $display("[Info- %t] Test CR autoclear after arbitration is lost", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // the autoclear of the CR register bits when arbitration is lost.
     // Additionaly it should check that the SR's al bit is set, clear it
     // with CR's al_ack bit is automaticaly and check that the al_ack is auto-cleared.
-    // TO BE COMPLETED BY THE STUDENT
+    arbitration_lost;
+    addr= 3'h3;
+    vExpected = 8'd0;
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    wait_cycles(1);
+    addr= 3'h5;
+    wait_cycles(1);
+    addr= 3'h3;
+    dataIn= 8'b00000010;
+    i2C_en= 1'b1;
+    wr=1'b1;
+    wait_cycles(1);
+    addr= 3'h5;
+    wait_cycles(1);
+    addr= 3'h3;
+    vExpected = 8'd0;
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    errors = 0;  
+
 
     $display("[Info- %t] Test TIP flag", $time);
     // TODO: Generate the test vectors using the available tasks to check
@@ -248,7 +276,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
        // evento 1
        begin
         addr = 3'h1;
-        dataIn = 8'b1100;
+        dataIn = 8'b11000000;
         wait_cycles(2);
         tranfer_done(1);
         wait_cycles(1);
@@ -263,7 +291,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
        // evento 2
        begin
         addr = 3'h1;
-        dataIn = 8'b1100;
+        dataIn = 8'b11000000;
         wait_cycles(2);
         arbitration_lost;
         wait_cycles(1);
