@@ -61,8 +61,8 @@ module tb_i2c_master_regs(); // module name (same as the file)
   integer errors;                   // Accumulated errors during the simulation
   integer vExpected;                // expected value
   integer vObtained;                // obtained value
-  reg  [DATA_WIDTH-1:0] data2write; // data to load in the shift register
-  reg    [ADDR_WIDTH:0] addr2write; // data to load in the shift register
+  reg  [DWIDTH-1:0] data2write; // data to load in the shift register
+  reg    [AWIDTH:0] addr2write; // data to load in the shift register
 
   //___________________________________________________________________________
   // Instantiation of the module to be verified
@@ -104,17 +104,15 @@ module tb_i2c_master_regs(); // module name (same as the file)
   // hookup system data bus master
   dbus_master_model#(
     .DATA_WIDTH  (8),
-    .ADDR_WIDTH  (8)
-   ) u_dbus(
+    .ADDR_WIDTH  (8)) u_dbus(
 
     .Clk                 (clk),      
     .Rst_n               (rst_n),      
     .Addr                (addr),      
     .Dout                (dataIn),      
     .Din                 (dataOut),      
-    .Wr                  (wr),      
-
-    ):
+    .Wr                  (wr) 
+    );
 
 
 
@@ -126,8 +124,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
 
     .Clk                 (clk),      
     .Rst_n               (rst_n)
-
-   ):
+   );
   //___________________________________________________________________________
   // signals and vars initialization
   initial begin
@@ -157,6 +154,8 @@ module tb_i2c_master_regs(); // module name (same as the file)
   //___________________________________________________________________________
   // Test Vectors
   initial begin
+   
+    
     $timeformat(-9, 2, " ns", 10); // format for the time print
     errors = 0;                    // initialize the errors counter
     u_sys.reset(3);                // puts the DUT in a known stage
@@ -194,39 +193,20 @@ module tb_i2c_master_regs(); // module name (same as the file)
     $display("[Info- %t] Test CR autoclear after tranfer ends", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // the autoclear of the CR register bits when byte transfer ends
-    data2write = 8'h00;
-    addr2write = 3'h3;
-
-    addr = addr2write;
-    transer_done;
-    vExpected = data2write;
-    vObtained = dataOut;
-    async_check;
-    check_errors;
-    errors = 0;  
-
+    // TO BE COMPLETED BY THE STUDENT
 
     $display("[Info- %t] Test CR autoclear after arbitration is lost", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // the autoclear of the CR register bits when arbitration is lost.
     // Additionaly it should check that the SR's al bit is set, clear it
     // with CR's al_ack bit is automaticaly and check that the al_ack is auto-cleared.
-    data2write = 8'h00;
-
-    arbitration_lost;
-    vExpected = data2write;
-    vObtained = dataOut;
-    async_check;
-    check_errors;
-    errors = 0;  
-
-
+    // TO BE COMPLETED BY THE STUDENT
 
     $display("[Info- %t] Test TIP flag", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // the correct generation of the Transfer In Progress flag. It must
     // check the TIP assertion and deassertion.
-    TO BE COMPLETED BY THE STUDENT
+    // TO BE COMPLETED BY THE STUDENT
 
     $display("[Info- %t] Test INT request generation", $time);
     // TODO: Generate the test vectors using the available tasks to check
@@ -234,48 +214,17 @@ module tb_i2c_master_regs(); // module name (same as the file)
     //    > Test all the posible generation sources
     //    > check the status bit and the interrupt request
     //    > the interrupt clear
-    TO BE COMPLETED BY THE STUDENT
+    // TO BE COMPLETED BY THE STUDENT
 
     $display("[Info- %t] Test Prescale, Control, Command and Transmission registers outputs", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // if all the prescale, control and commands signals outputs are correct.
-    TO BE COMPLETED BY THE STUDENT
+    // TO BE COMPLETED BY THE STUDENT
 
     $display("[Info- %t] Test RXR and the rx_ack flag", $time);
     // TODO: check that the rx_data is acceccible through the RXR,
     // and the rx_ack from bit 7 of SR
-
-
-    fork
-      //Evento 1
-      begin
-      addr2write = 3'h4; //Reg RXR
-
-      data2write = 8'h00;
-
-      vExpected = rx_data
-      vObtained =
-
-      async_check;
-      check_errors;
-      errors = 0; 
-
-      u_sys.wait_cycles(1);
-      end 
-
-      //Evento 2
-      begin
-
-
-
-
-
-
-
-      end
-
-
-    join
+    // TO BE COMPLETED BY THE STUDENT
 
     $display("[Info- %t] End of test", $time);
     $stop;
@@ -295,7 +244,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
   // an error message is displayed and the error counter increased.
   // It should be implemented using the fork statment : f label  join and  disable f label;
  
-  fork
+    fork
        // evento 1
        begin
         addr = 3'h1;
@@ -332,7 +281,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
   endtask
 
 
-  task transer_done(input Ack);
+  task tranfer_done(input Ack);
   // TODO: This task generates an I2C_done pulse signal indicating that
   // a byte transfer is done, and set the rx_ack depending on the input
     begin
@@ -348,7 +297,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
   // signal from the core.
     begin
       i2C_al=1'b1;
-      wait_cycles(3);
+      wait_cycles(1);
       i2C_al=1'b0;
     end 
   endtask
