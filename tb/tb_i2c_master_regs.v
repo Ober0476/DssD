@@ -188,7 +188,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
     reset;                 // tot a 0
     addr= 3'h3;            // adreça CR
     tranfer_done(1);       // transfer done => autoclear CR
-    vExpected = 8'd0;
+    vExpected = 8'd0;      // lecctura correcta
     vObtained = dataOut;
     async_check;
     check_errors;
@@ -238,7 +238,32 @@ module tb_i2c_master_regs(); // module name (same as the file)
     // TODO: Generate the test vectors using the available tasks to check
     // the correct generation of the Transfer In Progress flag. It must
     // check the TIP assertion and deassertion.
-    // TO BE COMPLETED BY THE STUDENT
+    reset;                      // tot a 0
+    addr= 3'h3;                 // adreça CR
+    dataIn= 8'b10010000;        // Start & Write a 1
+    wait_cycles(1); 
+    wr= 1'b1;
+    wait_cycles(1);
+    wr= 1'b0;
+    addr= 3'h5;                 // adreça  SR
+    wait_cycles(1);
+    vExpected= 1'b1;            // TIP a 1
+    vObtained= dataOut[1];
+    async_check;
+    check_errors;
+    addr= 3'h3;                 // adreça CR
+    dataIn= 8'b01000000;        // Stop a 1, Start, Write & Read a 0 => TIP=0
+    wait_cycles(1);
+    wr= 1'b1;
+    wait_cycles(1);
+    wr= 1'b0;
+    addr= 3'h5;                 // adreça SR
+    wait_cycles(1);
+    vExpected= 1'b0;            // TIP a 0
+    vObtained= dataOut[1];
+    async_check;
+    check_errors;
+    errors= 0;
 
     $display("[Info- %t] Test INT request generation", $time);
     // TODO: Generate the test vectors using the available tasks to check
@@ -292,6 +317,7 @@ module tb_i2c_master_regs(); // module name (same as the file)
     vObtained = dataOut;
     async_check;
     check_errors;
+    errors= 0;
 
     $display("[Info- %t] Test RXR and the rx_ack flag", $time);
     // TODO: check that the rx_data is acceccible through the RXR,
@@ -312,7 +338,8 @@ module tb_i2c_master_regs(); // module name (same as the file)
     vObtained= dataOut[7];
     async_check;
     check_errors;
-    
+    errors= 0;
+
     $display("[Info- %t] End of test", $time);
     $stop;
   end
