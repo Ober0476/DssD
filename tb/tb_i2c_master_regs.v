@@ -251,50 +251,68 @@ module tb_i2c_master_regs(); // module name (same as the file)
     $display("[Info- %t] Test Prescale, Control, Command and Transmission registers outputs", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // if all the prescale, control and commands signals outputs are correct.
-    reset;
-    addr= 3'h0;
-    dataIn= 8'd4;
-    wait_cycles(1);
+    reset;                  // tot a 0
+    addr= 3'h0;             // adreça Prescale
+    dataIn= 8'd4;           // a 4 como os gusta ;)
+    wait_cycles(1);   
     wr=1'b1;
     wait_cycles(1);
     wr=1'b0;
-    vExpected= 8'd4;
+    vExpected= 8'd4;        // lectura correcta 
     vObtained = dataOut;
     async_check;
     check_errors;
-    addr= 3'h1;
-    dataIn= 8'b11000000;
+    addr= 3'h1;             // adreça CTR
+    dataIn= 8'b11000000;    // I2C_en & ien a 1
     wait_cycles(1);
     wr= 1'b1;
     wait_cycles(1);
     wr=1'b0;
-    vExpected= 8'b11000000;
+    vExpected= 8'b11000000; // lectura correcta 
     vObtained = dataOut;
     async_check;
     check_errors;
-    addr= 3'h3;
+    addr= 3'h3;             // adreça CR
+    dataIn= 8'b1
     wait_cycles(1);
-    addr= 3'h2;
-    dataIn= 8'b00001000;
+    wr= 1'b1;
+    wait_cycles(1);
+    wr= 1'b0;
+    vExpected= 8'b1;        // lectura correcta 
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    addr= 3'h2;             // adreça TXR
+    dataIn= 8'd8;
     wait_cycles(1);
     wr= 1'b1;
     wait_cycles(1);
     wr=1'b0;
-    vExpected= 8'b00001000;
+    vExpected= 8'd8;        // lectura correcta 
     vObtained = dataOut;
     async_check;
     check_errors;
+
     $display("[Info- %t] Test RXR and the rx_ack flag", $time);
     // TODO: check that the rx_data is acceccible through the RXR,
     // and the rx_ack from bit 7 of SR
-    reset;
-    addr = 3'h4;
+    reset;                       // tot a 0
+    addr= 3'h4;                  // adreça RXR
     wait_cycles(1); 
-    dataOut = rx_data;
+    rx_data= 8'd4;               // Data rebuda
     wait_cycles(1);
-    addr = 3'h5;
-    dataOut[DWIDTH-1] = rx_ack;
-
+    vExpected= 8'd4;             // lectura correcta 
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    addr = 3'h5;                 // adreça SR
+    rx_ack= 1'b1;                // recieved ack bit
+    wait_cycles(1)
+    vExpected= 1'b1;             // lectura correcta 
+    vObtained= dataOut[7];
+    async_check;
+    check_errors;
+    
     $display("[Info- %t] End of test", $time);
     $stop;
   end
@@ -354,10 +372,10 @@ module tb_i2c_master_regs(); // module name (same as the file)
   // TODO: This task generates an I2C_done pulse signal indicating that
   // a byte transfer is done, and set the rx_ack depending on the input
     begin
-        rx_ack=Ack;
-        i2C_done= 1'b1;
+        rx_ack=Ack;           // received ack bit
+        i2C_done= 1'b1;       // transfer done
         wait_cycles (1);
-        i2C_done= 1'b0;
+        i2C_done= 1'b0;       // next transfer available
     end
   endtask
 
@@ -365,9 +383,9 @@ module tb_i2c_master_regs(); // module name (same as the file)
   // TODO: this task generates a I2C_al pulse simulating the arbitration lost
   // signal from the core.
     begin
-      i2C_al=1'b1;
+      i2C_al=1'b1;            // I2C bus arbitration lost
       wait_cycles(1);
-      i2C_al=1'b0;
+      i2C_al=1'b0;            
     end 
   endtask
 
