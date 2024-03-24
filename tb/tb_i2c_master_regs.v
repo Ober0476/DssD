@@ -134,20 +134,12 @@ module tb_i2c_master_regs(); // module name (same as the file)
     addr = {AWIDTH{1'b0}};
     dataIn = {DWIDTH{1'b0}};
     wr = 1'b0;
-    int = 1'b0;
 
     // commands 
-    start = 1'b0;
-    stop = 1'b0;
-    read = 1'b0;
-    tx_ack = 1'b0;
     rx_ack = 1'b0;
     rx_data = 8'b0;
-    tx_data = 8'b0;
-    prescale = 8'b0;
     i2C_busy = 1'b0;
     i2C_done = 1'b0;
-    i2C_en = 1'b0;
     i2C_al = 1'b0;
   end
 
@@ -193,8 +185,9 @@ module tb_i2c_master_regs(); // module name (same as the file)
     $display("[Info- %t] Test CR autoclear after tranfer ends", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // the autoclear of the CR register bits when byte transfer ends
-    tranfer_done(1);
-    addr= 3'h3;
+    reset;                 // tot a 0
+    addr= 3'h3;            // adreça CR
+    tranfer_done(1);       // transfer done => autoclear CR
     vExpected = 8'd0;
     vObtained = dataOut;
     async_check;
@@ -206,24 +199,35 @@ module tb_i2c_master_regs(); // module name (same as the file)
     // the autoclear of the CR register bits when arbitration is lost.
     // Additionaly it should check that the SR's al bit is set, clear it
     // with CR's al_ack bit is automaticaly and check that the al_ack is auto-cleared.
-    arbitration_lost;
-    addr= 3'h3;
-    vExpected = 8'd0;
-    vObtained = dataOut;
+    reset;                 // tot a 0
+    addr= 3'h3;            // adreça CR
+    wait_cycles(1);
+    arbitration_lost;      // Perdua d'arbitratge
+    wait_cycles(1);
+    vExpected = 8'd0;      // CR hauria de estar tot a 0
+    vObtained = dataOut;  
     async_check;
     check_errors;
     wait_cycles(1);
-    addr= 3'h5;
+    addr= 3'h5;            // adreça SR & al bit set
     wait_cycles(1);
-    addr= 3'h3;
-    dataIn= 8'b00000010;
-    i2C_en= 1'b1;
-    wr=1'b1;
+    vExpected= 8'b00100000; // SR's al bit
+    vObtained= dataOut;
+    async_check;
+    check_errors;
+    addr= 3'h3;             // adreça CR
+    dataIn= 8'b00000010     // Cr's al_ack set
     wait_cycles(1);
-    addr= 3'h5;
+    wr= 1'b1;
     wait_cycles(1);
-    addr= 3'h3;
-    vExpected = 8'd0;
+    wr=1'b0;
+    addr= 3'h5;             // adreça SR 
+    wait_cycles(1);
+    vExpected= 8'b00000000; // SR's al bit clear
+    vObtained= dataOut;
+    addr= 3'h3;             // adreça CR
+    wait_cycles(1);
+    vExpected = 8'd0;       // al_ack clear
     vObtained = dataOut;
     async_check;
     check_errors;
@@ -242,17 +246,54 @@ module tb_i2c_master_regs(); // module name (same as the file)
     //    > Test all the posible generation sources
     //    > check the status bit and the interrupt request
     //    > the interrupt clear
-    // TO BE COMPLETED BY THE STUDENT
+
 
     $display("[Info- %t] Test Prescale, Control, Command and Transmission registers outputs", $time);
     // TODO: Generate the test vectors using the available tasks to check
     // if all the prescale, control and commands signals outputs are correct.
-    // TO BE COMPLETED BY THE STUDENT
-
+    reset;
+    addr= 3'h0;
+    dataIn= 8'd4;
+    wait_cycles(1);
+    wr=1'b1;
+    wait_cycles(1);
+    wr=1'b0;
+    vExpected= 8'd4;
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    addr= 3'h1;
+    dataIn= 8'b11000000;
+    wait_cycles(1);
+    wr= 1'b1;
+    wait_cycles(1);
+    wr=1'b0;
+    vExpected= 8'b11000000;
+    vObtained = dataOut;
+    async_check;
+    check_errors;
+    addr= 3'h3;
+    wait_cycles(1);
+    addr= 3'h2;
+    dataIn= 8'b00001000;
+    wait_cycles(1);
+    wr= 1'b1;
+    wait_cycles(1);
+    wr=1'b0;
+    vExpected= 8'b00001000;
+    vObtained = dataOut;
+    async_check;
+    check_errors;
     $display("[Info- %t] Test RXR and the rx_ack flag", $time);
     // TODO: check that the rx_data is acceccible through the RXR,
     // and the rx_ack from bit 7 of SR
-    // TO BE COMPLETED BY THE STUDENT
+    reset;
+    addr = 3'h4;
+    wait_cycles(1); 
+    dataOut = rx_data;
+    wait_cycles(1);
+    addr = 3'h5;
+    dataOut[DWIDTH-1] = rx_ack;
 
     $display("[Info- %t] End of test", $time);
     $stop;
